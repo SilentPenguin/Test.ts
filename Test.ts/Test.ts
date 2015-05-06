@@ -97,7 +97,6 @@ module Test {
 
     export class Case implements ICase {
         fixtures: IFixture[];
-        assert: Assert.IAssert;
 
         constructor() {
             this.fixtures = this.getfixtures();
@@ -135,7 +134,7 @@ module Test {
 
         run(): void {
             try {
-                var context = { assert: new Assert.Assert() };
+                var context = { };
                 this.before.call(context);
                 this.func.call(context);
                 this.after.call(context);
@@ -207,7 +206,6 @@ module Test {
      *----------------*/
 
     interface ICase {
-        assert: Assert.IAssert;
         run(): void;
     }
 

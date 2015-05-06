@@ -12,6 +12,8 @@
         return object;
     }
 
+    export var that: IAssertThat = AssertThat();
+
     function AssertAll(): IAssertAll {
         return function <T>(items: T[]): ISetAssertion<T> {
             return new AssertionContainer(items);
