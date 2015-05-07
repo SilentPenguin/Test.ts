@@ -95,6 +95,22 @@ module Test {
      * Implementation *
      *----------------*/
 
+    export class Set implements ISet {
+        cases: IRun[];
+
+        constructor() {
+            this.cases = []
+        }
+
+        add(test: IRun) {
+            this.cases.push(test);
+        }
+
+        run(): void {
+            this.cases.forEach(test => test.run());
+        }
+    }
+
     export class Case implements ICase {
         fixtures: IFixture[];
 
@@ -205,13 +221,17 @@ module Test {
      *   Interfaces   *
      *----------------*/
 
-    interface ICase {
+    interface IRun {
         run(): void;
     }
 
-    interface IFixture {
-        run(): void;
+    interface ISet extends IRun {
+        add(test: ICase): void;
     }
+
+    interface ICase extends IRun { }
+
+    interface IFixture extends IRun { }
 
     interface IResult {
         state: State;
