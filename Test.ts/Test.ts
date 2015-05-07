@@ -102,7 +102,7 @@ module Test {
             this.cases = []
         }
 
-        add(test: IRun) {
+        add(test: IRun): void {
             this.cases.push(test);
         }
 
@@ -124,9 +124,12 @@ module Test {
 
         getfixtures(): IFixture[] {
             var result: IFixture[] = [];
-
+            var propIsFunc: boolean;
+            var propIsTest: boolean;
             for (var property in this) {
-                if (this[property] instanceof Function && property.substring(0, 4) == "test") {
+                propIsFunc = this[property] instanceof Function;
+                propIsTest = property.substring(0, 4) == "test" || this[property].intent != null;
+                if (propIsFunc && propIsTest) {
                     result.push(new Fixture(this[property], this["before"], this["after"]));
                 }
             }
