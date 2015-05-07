@@ -106,8 +106,10 @@ module Test {
             this.cases.push(test);
         }
 
-        run(): void {
-            this.cases.forEach(test => test.run());
+        run(): boolean {
+            var result: boolean = true;
+            this.cases.forEach(test => result = result && test.run());
+            return result;
         }
     }
 
@@ -118,14 +120,17 @@ module Test {
             this.fixtures = this.getfixtures();
         }
 
-        run(): void {
-            this.fixtures.forEach(fixture => fixture.run());
+        run(): boolean {
+            var result: boolean = true;
+            this.fixtures.forEach(fixture => result = result && fixture.run());
+            return result;
         }
 
         getfixtures(): IFixture[] {
-            var result: IFixture[] = [];
-            var propIsFunc: boolean;
-            var propIsTest: boolean;
+            var result: IFixture[] = [],
+                propIsFunc: boolean,
+                propIsTest: boolean;
+
             for (var property in this) {
                 propIsFunc = this[property] instanceof Function;
                 propIsTest = property.substring(0, 4) == "test" || this[property].intent != null;
@@ -151,7 +156,7 @@ module Test {
             this.result = new Result(func.intent || Intent.none);
         }
 
-        run(): void {
+        run(): boolean {
             try {
                 var context = { };
                 this.before.call(context);
@@ -162,6 +167,8 @@ module Test {
             catch(exception) {
                 this.result.fail.because(exception.message);
             }
+
+            return this.result.state != State.fail;
         }
     }
 
@@ -225,7 +232,7 @@ module Test {
      *----------------*/
 
     interface IRun {
-        run(): void;
+        run(): boolean;
     }
 
     interface ISet extends IRun {
