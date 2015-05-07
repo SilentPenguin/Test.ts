@@ -97,14 +97,14 @@ module Test {
 
     export class Set implements ISet {
         name: string;
-        cases: ITestContainer[];
+        cases: IContainer[];
 
         constructor() {
             this.name = (<any>this).constructor.name;
             this.cases = [];
         }
 
-        add(test: ITestContainer): void {
+        add(test: IContainer): void {
             this.cases.push(test);
         }
 
@@ -252,15 +252,15 @@ module Test {
         run(): boolean;
     }
 
-    interface ITestContainer extends IRun {
+    interface IContainer extends IRun {
         result(): IResult[];
     }
 
-    interface ISet extends ITestContainer {
+    interface ISet extends IContainer {
         add(test: ICase): void;
     }
 
-    interface ICase extends ITestContainer { }
+    interface ICase extends IContainer { }
 
     interface IFixture extends IRun {
         result: IResult;
