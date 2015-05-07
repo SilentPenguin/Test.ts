@@ -97,10 +97,12 @@ module Test {
 
     export class Set implements ISet {
         name: string;
+        path: string;
         cases: IContainer[];
 
-        constructor() {
+        constructor(path?: String) {
             this.name = (<any>this).constructor.name;
+            this.path = (path ? path + '.' : '') + this.name;
             this.cases = [];
         }
 
@@ -123,10 +125,12 @@ module Test {
 
     export class Case implements ICase {
         name: string;
+        path: string;
         fixtures: IFixture[];
 
-        constructor() {
+        constructor(path?: string) {
             this.name = (<any>this).constructor.name;
+            this.path = (path ? path + '.' : '') +  this.name;
             this.fixtures = this.getfixtures();
         }
 
@@ -139,11 +143,13 @@ module Test {
         getfixtures(): IFixture[] {
             var result: IFixture[] = [],
                 propIsFunc: boolean,
-                propIsTest: boolean;
+                propIsTest: boolean,
+                fixture: IFixture;
 
             for (var property in this) {
                 if (this[property] instanceof Function && (property.substring(0, 4) == "test" || this[property].intent != null)) {
-                    result.push(new Fixture(property, this[property], this["before"], this["after"]));
+                    fixture = new Fixture(property, this.path, this[property], this["before"], this["after"])
+                    result.push(fixture);
                 }
             }
 
@@ -159,17 +165,19 @@ module Test {
 
     class Fixture implements IFixture {
         name: string;
+        path: string;
         func: ITest;
         before: Function;
         after: Function;
         result: IResult;
 
-        constructor(name: string, func: ITest, before: Function, after: Function) {
+        constructor(name: string, path: string, func: ITest, before: Function, after: Function) {
             this.name = name;
+            this.path = path + '.' + name;
             this.func = func;
             this.before = before || new Function();
             this.after = after || new Function();
-            this.result = new Result(func.intent || Intent.none);
+            this.result = new Result(this.path, func.intent || Intent.none);
         }
 
         run(): boolean {
@@ -189,11 +197,13 @@ module Test {
     }
 
     class Result implements IResult {
+        path: string
         intent: Intent;
         state: State;
         message: string;
 
-        constructor(intent: Intent) {
+        constructor(path: string, intent: Intent) {
+            this.path = path;
             this.intent = intent;
             this.state = State.none;
             this.message = null;
@@ -249,6 +259,7 @@ module Test {
 
     interface IRun {
         name: string;
+        path: string;
         run(): boolean;
     }
 
@@ -267,6 +278,7 @@ module Test {
     }
 
     interface IResult {
+        path: string;
         state: State;
         message: string;
         pass: IPass;
