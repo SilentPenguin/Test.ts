@@ -96,13 +96,15 @@ module Test {
      *----------------*/
 
     export class Set implements ISet {
-        cases: IRun[];
+        name: string;
+        cases: ITestContainer[];
 
         constructor() {
-            this.cases = []
+            this.name = (<any>this).constructor.name;
+            this.cases = [];
         }
 
-        add(test: IRun): void {
+        add(test: ITestContainer): void {
             this.cases.push(test);
         }
 
@@ -111,12 +113,20 @@ module Test {
             this.cases.forEach(test => result = result && test.run());
             return result;
         }
+
+        result(): IResult[] {
+            var result: IResult[] = [];
+            this.cases.forEach(test => result.concat(test.result()));
+            return result;
+        }
     }
 
     export class Case implements ICase {
+        name: string;
         fixtures: IFixture[];
 
         constructor() {
+            this.name = (<any>this).constructor.name;
             this.fixtures = this.getfixtures();
         }
 
@@ -132,24 +142,30 @@ module Test {
                 propIsTest: boolean;
 
             for (var property in this) {
-                propIsFunc = this[property] instanceof Function;
-                propIsTest = property.substring(0, 4) == "test" || this[property].intent != null;
-                if (propIsFunc && propIsTest) {
-                    result.push(new Fixture(this[property], this["before"], this["after"]));
+                if (this[property] instanceof Function && (property.substring(0, 4) == "test" || this[property].intent != null)) {
+                    result.push(new Fixture(property, this[property], this["before"], this["after"]));
                 }
             }
 
             return result;
         }
+
+        result(): IResult[] {
+            var result: IResult[] = [];
+            this.fixtures.forEach(fixture => result.push(fixture.result));
+            return result;
+        }
     }
 
     class Fixture implements IFixture {
+        name: string;
         func: ITest;
         before: Function;
         after: Function;
         result: IResult;
 
-        constructor(func: ITest, before: Function, after: Function) {
+        constructor(name: string, func: ITest, before: Function, after: Function) {
+            this.name = name;
             this.func = func;
             this.before = before || new Function();
             this.after = after || new Function();
@@ -232,16 +248,23 @@ module Test {
      *----------------*/
 
     interface IRun {
+        name: string;
         run(): boolean;
     }
 
-    interface ISet extends IRun {
+    interface ITestContainer extends IRun {
+        result(): IResult[];
+    }
+
+    interface ISet extends ITestContainer {
         add(test: ICase): void;
     }
 
-    interface ICase extends IRun { }
+    interface ICase extends ITestContainer { }
 
-    interface IFixture extends IRun { }
+    interface IFixture extends IRun {
+        result: IResult;
+    }
 
     interface IResult {
         state: State;
