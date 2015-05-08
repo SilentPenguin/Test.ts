@@ -39,10 +39,16 @@
             this.items = items;
             this.every = every;
             if (array) {
-                this.message = "Assert.that." + (this.every ? "all" : "any") + "(" + this.items + ").are.";
+                this.message = "Assert.that." + (this.every ? "all" : "any") + "(" + this.repr(items, array) + ").are.";
             } else {
-                this.message = "Assert.that(" + this.items[0] + ").is.";
+                this.message = "Assert.that(" + this.repr(items, array) + ").is.";
             }
+        }
+
+        repr(items: T[], array: boolean): string {
+            var obj: any = array ? items : items[0];
+            var repr: string = JSON.stringify(obj);
+            return repr.length < 35 ? repr : obj;
         }
 
         assert(func: IFilter<T>, message:string, expectation: boolean) {
