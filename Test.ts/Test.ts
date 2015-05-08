@@ -97,21 +97,19 @@ module Test {
 
     export class Set implements ISet {
         name: string;
-        path: string;
         cases: IContainer[];
 
         constructor(path?: String) {
             this.name = (<any>this).constructor.name;
-            this.path = (path ? path + '.' : '') + this.name;
             this.cases = this.getCases();
         }
 
-        getCases(): IContainer[]{
+        getCases(): IContainer[] {
             var result: IContainer[] = [];
 
             for (var property in this) {
                 if (this[property] instanceof Set || this[property] instanceof Case) {
-                    result.push(this[property]);
+                    this.add(this[property]);
                 }
             }
 
@@ -128,21 +126,20 @@ module Test {
             return result;
         }
 
-        result(): IResult[] {
-            var result: IResult[] = [];
-            this.cases.forEach(test => result.concat(test.result()));
-            return result;
+        results(): IResult[] {
+            var results: IResult[] = [];
+            this.cases.forEach(test => results.concat(test.results()));
+            results.forEach(result => result.path = this.name + "." + result.path);
+            return results;
         }
     }
 
     export class Case implements ICase {
         name: string;
-        path: string;
         fixtures: IFixture[];
 
         constructor(path?: string) {
             this.name = (<any>this).constructor.name;
-            this.path = (path ? path + '.' : '') +  this.name;
             this.fixtures = this.getfixtures();
         }
 
@@ -160,7 +157,7 @@ module Test {
 
             for (var property in this) {
                 if (this[property] instanceof Function && (property.substring(0, 4) == "test" || this[property].intent != null)) {
-                    fixture = new Fixture(property, this.path, this[property], this["before"], this["after"])
+                    fixture = new Fixture(property, this[property], this["before"], this["after"])
                     result.push(fixture);
                 }
             }
@@ -168,28 +165,27 @@ module Test {
             return result;
         }
 
-        result(): IResult[] {
-            var result: IResult[] = [];
-            this.fixtures.forEach(fixture => result.push(fixture.result));
-            return result;
+        results(): IResult[] {
+            var results: IResult[] = [];
+            this.fixtures.forEach(fixture => results.push(fixture.results()));
+            results.forEach(result => result.path = this.name + "." + result.path);
+            return results;
         }
     }
 
     class Fixture implements IFixture {
         name: string;
-        path: string;
         func: ITest;
         before: Function;
         after: Function;
         result: IResult;
 
-        constructor(name: string, path: string, func: ITest, before: Function, after: Function) {
+        constructor(name: string, func: ITest, before: Function, after: Function) {
             this.name = name;
-            this.path = path + '.' + name;
             this.func = func;
             this.before = before || new Function();
             this.after = after || new Function();
-            this.result = new Result(this.path, func.intent || Intent.none);
+            this.result = new Result(func.intent || Intent.none);
         }
 
         run(): boolean {
@@ -206,6 +202,11 @@ module Test {
 
             return this.result.state != State.fail;
         }
+
+        results(): IResult {
+            this.result.path = name;
+            return this.result;
+        }
     }
 
     class Result implements IResult {
@@ -214,8 +215,7 @@ module Test {
         state: State;
         message: string;
 
-        constructor(path: string, intent: Intent) {
-            this.path = path;
+        constructor(intent: Intent) {
             this.intent = intent;
             this.state = State.none;
             this.message = null;
@@ -271,12 +271,11 @@ module Test {
 
     interface IRun {
         name: string;
-        path: string;
         run(): boolean;
     }
 
     interface IContainer extends IRun {
-        result(): IResult[];
+        results(): IResult[];
     }
 
     interface ISet extends IContainer {
@@ -286,7 +285,7 @@ module Test {
     interface ICase extends IContainer { }
 
     interface IFixture extends IRun {
-        result: IResult;
+        results(): IResult;
     }
 
     interface IResult {
