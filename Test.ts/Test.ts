@@ -103,7 +103,19 @@ module Test {
         constructor(path?: String) {
             this.name = (<any>this).constructor.name;
             this.path = (path ? path + '.' : '') + this.name;
-            this.cases = [];
+            this.cases = this.getCases();
+        }
+
+        getCases(): IContainer[]{
+            var result: IContainer[] = [];
+
+            for (var property in this) {
+                if (this[property] instanceof Set || this[property] instanceof Case) {
+                    result.push(this[property]);
+                }
+            }
+
+            return result;
         }
 
         add(test: IContainer): void {
