@@ -16,13 +16,13 @@
 
     function AssertAll(): IAssertAll {
         return function <T>(items: T[]): ISetAssertion<T> {
-            return new AssertionContainer(items);
+            return new AssertionContainer(items, true, true);
         }
     }
 
     function AssertAny(): IAssertAny {
         return function <T>(items: T[]): ISetAssertion<T> {
-            return new AssertionContainer(items, false);
+            return new AssertionContainer(items, false, true);
         }
     }
 
@@ -33,23 +33,29 @@
         are: IAssertion<T> = Assertion.call(this);
 
         every: boolean;
+        message: string;
 
-        constructor(items: T[], every: boolean = true) {
+        constructor(items: T[], every: boolean = true, array = false) {
             this.items = items;
             this.every = every;
+            if (array) {
+                this.message = "Assert.that." + (this.every ? "all" : "any") + "(" + this.items + ").are.";
+            } else {
+                this.message = "Assert.that(" + this.items[0] + ").is.";
+            }
         }
 
-        assert(func: IFilter<T>, expectation: boolean) {
+        assert(func: IFilter<T>, message:string, expectation: boolean) {
             var result: boolean = this.every ? this.items.every(func) : this.items.some(func);
             if (result != expectation) {
-                throw new Error();
+                throw new Error(this.message + (expectation ? "" : "not.") + message);
             }
         }
     }
 
     function Assertion<T>(): IAssertion<T> {
-        var object: any = BaseAssertion.call(this, (func: Function) => this.assert(func, true));
-        object.not = BaseAssertion.call(this, (func: Function) => this.assert(func, false));
+        var object: any = BaseAssertion.call(this, (func: Function, message: String) => this.assert(func, message, true));
+        object.not = BaseAssertion.call(this, (func: Function, message: String) => this.assert(func, message, false));
         return object;
     }
 
@@ -63,45 +69,69 @@
             greater: AssertGreater.call(this, assert),
             less: AssertLess.call(this, assert),
 
-            true: () => { assert(item => item) },
-            false: () => { assert(item => !item) },
-            assigned: () => { assert(item => item != null) },
-            null: () => { assert(item => item == null)},
-            undefined: () => { assert(item => item == undefined) },
-            defined: () => { assert(item => item != undefined) },
+            true: AssertTrue.call(this, assert),
+            false: AssertFalse.call(this, assert),
+            assigned: AssertAssigned.call(this, assert),
+            null: AssertNull.call(this, assert),
+            undefined: AssertUndefined.call(this, assert),
+            defined: AssertDefined.call(this, assert),
 
             match: AssertMatch.call(this, assert)
         };
     }
 
     function AssertEqual<T>(assert: Function): IAssertEqual<T> {
-        return { to: <T>(item: T) => { assert(value => value == item); } };
+        return { to: <T>(item: T) => { assert(value => value == item, "equal.to(" + item +")"); } };
     }
 
     function AssertExact<T>(assert: Function): IAssertExact<T> {
-        return { to: <T>(item: T) => { assert(value => value === item); } };
+        return { to: <T>(item: T) => { assert(value => value === item, "exact.to(" + item +")"); } };
     }
 
     function AssertDifferent<T>(assert: Function): IAssertDifferent<T> {
-        return { from: <T>(item: T) => { assert(value => value != item); } };
+        return { from: <T>(item: T) => { assert(value => value != item, "different.from(" + item +")"); } };
     }
 
     function AssertDistinct<T>(assert: Function): IAssertDistinct<T> {
-        return { from: <T>(item: T) => { assert(value => value !== item); } };
+        return { from: <T>(item: T) => { assert(value => value !== item, "distinct.from(" + item +")"); } };
     }
 
     function AssertGreater<T>(assert: Function): IAssertGreater<T> {
-        return { than: <T>(item: T) => { assert(value => value > item); } };
+        return { than: <T>(item: T) => { assert(value => value > item, "greater.than(" + item +")"); } };
     }
 
     function AssertLess<T>(assert: Function): IAssertLess<T> {
-        return { than: <T>(item: T) => { assert(value => value < item); } };
+        return { than: <T>(item: T) => { assert(value => value < item, "less.than(" + item +")"); } };
+    }
+
+    function AssertTrue(assert: Function): IAssertFunction {
+        return () => { assert(item => item, "true()") };
+    }
+
+    function AssertFalse(assert: Function): IAssertFunction {
+        return () => { assert(item => !item, "false()") };
+    }
+
+    function AssertAssigned(assert: Function): IAssertFunction {
+        return () => { assert(item => item != null, "assigned()") };
+    }
+
+    function AssertNull(assert: Function): IAssertFunction {
+        return () => { assert(item => item == null, "null()") };
+    }
+
+    function AssertUndefined(assert: Function): IAssertFunction {
+        return () => { assert(item => item == undefined, "undefined()") };
+    }
+
+    function AssertDefined(assert: Function): IAssertFunction {
+        return () => { assert(item => item != undefined, "defined()") };
     }
 
     function AssertMatch<T>(assert: Function): IAssertMatch<T> {
         return {
-            expression: (item: RegExp) => { assert(value => item.test(value)); },
-            test: <T>(func: IFilter<T>) => { assert(value => func(value)); }
+            expression: (item: RegExp) => { assert(value => item.test(value), "match.expression(" + item +")"); },
+            test: <T>(func: IFilter<T>) => { assert(value => func(value), "match.test(" + func +")"); }
         };
     }
 
@@ -142,18 +172,22 @@
         greater: IAssertGreater<T>;
         less: IAssertLess<T>;
 
-        true: () => void;
-        false: () => void;
-        assigned: () => void;
-        null: () => void;
-        undefined: () => void;
-        defined: () => void;
+        true: IAssertFunction;
+        false: IAssertFunction;
+        assigned: IAssertFunction;
+        null: IAssertFunction;
+        undefined: IAssertFunction;
+        defined: IAssertFunction;
 
         match: IAssertMatch<T>;
     }
 
     interface IAssertion<T> extends IBaseAssertion<T> {
         not: IBaseAssertion<T>;
+    }
+
+    interface IAssertFunction {
+        (): void;
     }
 
     interface IAssertEqual<T> {

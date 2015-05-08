@@ -18,6 +18,6 @@ class MyTest extends Test.Case {
     }
 
     test_something_false(): void {
-        Assert.that(this.something).is.false();
+        Assert.that(this.something).is.equal.to(5);
     }
 }
