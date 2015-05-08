@@ -11,7 +11,7 @@ module Test {
         fail  //fails only, fails pass, everything else fails.
     };
 
-    enum State {
+    export enum State {
         none,
         pass, //test has passed
         fail, //test has failed
@@ -41,7 +41,7 @@ module Test {
     function SkipTest(skip: boolean = true, reason?: string): IMethodDecorator {
         if (skip) {
             return (target, key, descriptor) => {
-                descriptor.value = () => { reason != null ? this.result.skip.because(reason) : this.result.skip(); }
+                descriptor.value = () => { reason != null ? this.skip.because(reason) : this.skip(); }
             };
         } else {
             return (target, key, descriptor) => {
@@ -183,9 +183,10 @@ module Test {
         constructor(name: string, func: ITest, before: Function, after: Function) {
             this.name = name;
             this.func = func;
+            this.func.intent = this.func.intent || Intent.none;
             this.before = before || new Function();
             this.after = after || new Function();
-            this.result = new Result(func.intent || Intent.none);
+            this.result = new Result();
         }
 
         run(): boolean {
@@ -194,14 +195,18 @@ module Test {
                 this.before.call(context);
                 this.func.call(context);
                 this.after.call(context);
-                this.result.pass();
+                this.pass();
             }
             catch(exception) {
-                this.result.fail.because(exception.message);
+                this.fail.because(exception.message);
             }
 
             return this.result.state != State.fail;
         }
+
+        pass: IPass = Pass.call(this);
+        fail: IFail = Fail.call(this);
+        skip: ISkip = Skip.call(this);
 
         results(): IResult {
             this.result.path = name;
@@ -211,26 +216,21 @@ module Test {
 
     class Result implements IResult {
         path: string
-        intent: Intent;
         state: State;
         message: string;
 
-        constructor(intent: Intent) {
-            this.intent = intent;
+        constructor() {
+            this.path = "";
             this.state = State.none;
             this.message = null;
         }
-
-        pass: IPass = Pass.call(this);
-        fail: IFail = Fail.call(this);
-        skip: ISkip = Skip.call(this);
     }
 
     function Pass(): IPass {
         var object: any = (message?: string): void => {
-            if (this.state != State.fail) {
-                this.state = this.intent != Intent.fail ? State.pass : State.fail;
-                this.message = message;
+            if (this.result.state != State.fail) {
+                this.result.state = this.func.intent != Intent.fail ? State.pass : State.fail;
+                this.result.message = message;
             }
         };
 
@@ -241,9 +241,9 @@ module Test {
 
     function Fail(): IFail {
         var object: any = (message?: string): void => {
-            if (this.state != State.fail) {
-                this.state = this.intent != Intent.fail ? State.fail : State.pass;
-                this.message = message;
+            if (this.result.state != State.fail) {
+                this.result.state = this.func.intent != Intent.fail ? State.fail : State.pass;
+                this.result.message = message;
             }
         };
 
@@ -254,9 +254,9 @@ module Test {
 
     function Skip(): ISkip {
         var object: any = (message?: string): void => {
-            if (this.state != State.fail) {
-                this.state = this.intent != Intent.none ? State.skip : State.fail;
-                this.message = message;
+            if (this.result.state != State.fail) {
+                this.result.state = this.func.intent != Intent.none ? State.skip : State.fail;
+                this.result.message = message;
             }
         };
 
@@ -278,23 +278,20 @@ module Test {
         results(): IResult[];
     }
 
-    interface ISet extends IContainer {
+    export interface ISet extends IContainer {
         add(test: ICase): void;
     }
 
-    interface ICase extends IContainer { }
+    export interface ICase extends IContainer { }
 
     interface IFixture extends IRun {
         results(): IResult;
     }
 
-    interface IResult {
+    export interface IResult {
         path: string;
         state: State;
         message: string;
-        pass: IPass;
-        fail: IFail;
-        skip: ISkip;
     }
 
     interface IPass {
