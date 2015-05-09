@@ -1,4 +1,8 @@
 ﻿/// <reference path="assert.ts" />
+
+var skip = Test.skip;
+var test = Test.test;
+
 module Test {
 
     /*----------------*
@@ -40,11 +44,11 @@ module Test {
 
     function SkipTest(skip: boolean = true, reason?: string): IMethodDecorator {
         if (skip) {
-            return (target, key, descriptor) => {
+            return (target: Object, key: string, descriptor: TypedPropertyDescriptor<Function>) => {
                 descriptor.value = () => { reason != null ? this.skip.because(reason) : this.skip(); }
             };
         } else {
-            return (target, key, descriptor) => {
+            return (target: Object, key: string, descriptor: TypedPropertyDescriptor<ITest>) => {
                 descriptor;
             };
         }
@@ -69,7 +73,7 @@ module Test {
     }
 
     function TakeTest(intent: Intent) {
-        return (target, key, descriptor) => {
+        return (target: Object, key: string, descriptor: TypedPropertyDescriptor<ITest>) => {
             descriptor.value.intent = intent;
             return descriptor;
         }
