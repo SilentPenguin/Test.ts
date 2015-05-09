@@ -1,8 +1,5 @@
 ﻿/// <reference path="assert.ts" />
 
-var skip = Test.skip;
-var test = Test.test;
-
 module Test {
 
     /*----------------*
@@ -160,7 +157,7 @@ module Test {
                 fixture: IFixture;
 
             for (var property in this) {
-                if (this[property] instanceof Function && (property.substring(0, 4) == "test" || this[property].intent != null)) {
+                if (this[property] instanceof Function && this[property].intent != null) {
                     fixture = new Fixture(property, this[property], this["before"], this["after"])
                     result.push(fixture);
                 }
@@ -356,3 +353,6 @@ module Test {
         (skip: boolean): ISkipBaseDecorator;
     }
 }
+
+var skip = Test.skip;
+var test = Test.test;
