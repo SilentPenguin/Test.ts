@@ -48,7 +48,7 @@
         repr(items: T[], array: boolean): string {
             var obj: any = array ? items : items[0];
             var repr: string = JSON.stringify(obj);
-            return repr.length < 35 ? repr : obj;
+            return repr && repr.length < 35 ? repr : obj;
         }
 
         assert(func: IFilter<T>, message:string, expectation: boolean) {
