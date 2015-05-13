@@ -238,7 +238,7 @@
     }
 
     interface IFilter<T> {
-        (item: T): boolean;
+        (item: T, index?: number, array?: T[]): boolean;
     }
 
     interface IAssertTest<T> {
