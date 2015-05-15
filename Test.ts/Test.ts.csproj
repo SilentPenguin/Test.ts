@@ -19,6 +19,7 @@
   </PropertyGroup>
   <ItemGroup>
     <TypeScriptCompile Include="Assert.ts" />
+    <TypeScriptCompile Include="Report.ts" />
     <TypeScriptCompile Include="Test.ts" />
   </ItemGroup>
   <PropertyGroup>

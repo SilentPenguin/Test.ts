@@ -54,7 +54,7 @@
         assert(func: IFilter<T>, message:string, expectation: boolean) {
             var result: boolean = this.every ? this.items.every(func) : this.items.some(func);
             if (result != expectation) {
-                throw new Error(this.message + (expectation ? "" : "not.") + message);
+                throw new Error(this.message + (expectation ? "" : "not.") + message + " failed");
             }
         }
     }

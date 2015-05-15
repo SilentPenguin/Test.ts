@@ -42,7 +42,7 @@ module Test {
     function SkipTest(skip: boolean = true, reason?: string): IMethodDecorator {
         if (skip) {
             return (target: Object, key: string, descriptor: TypedPropertyDescriptor<Function>) => {
-                descriptor.value = () => { reason != null ? this.skip.because(reason) : this.skip(); }
+                descriptor.value = function () { reason != null ? this.skip.because(reason) : this.skip(); }
             };
         } else {
             return (target: Object, key: string, descriptor: TypedPropertyDescriptor<ITest>) => {
@@ -123,7 +123,7 @@ module Test {
 
         run(): boolean {
             var result: boolean = true;
-            this.cases.forEach(test => result = result && test.run());
+            this.cases.forEach(test => result = test.run() && result);
             return result;
         }
 
@@ -146,7 +146,7 @@ module Test {
 
         run(): boolean {
             var result: boolean = true;
-            this.fixtures.forEach(fixture => result = result && fixture.run());
+            this.fixtures.forEach(fixture => result = fixture.run() && result);
             return result;
         }
 
@@ -192,7 +192,11 @@ module Test {
 
         run(): boolean {
             try {
-                var context = { };
+                var context = {};
+                context['pass'] = Pass.call(this);
+                context['fail'] = Fail.call(this);
+                context['skip'] = Skip.call(this);
+
                 this.before.call(context);
                 this.func.call(context);
                 this.after.call(context);
@@ -210,7 +214,7 @@ module Test {
         skip: ISkip = Skip.call(this);
 
         results(): IResult {
-            this.result.path = name;
+            this.result.path = this.name;
             return this.result;
         }
     }
@@ -229,12 +233,13 @@ module Test {
 
     function Pass(): IPass {
         var object: any = (message?: string): void => {
-            if (this.result.state != State.fail) {
+            if (this.result.state != State.fail && this.result.state != State.skip) {
                 this.result.state = this.func.intent != Intent.fail ? State.pass : State.fail;
                 this.result.message = message;
             }
         };
 
+        object = object.bind(this);
         object.because = object;
 
         return object;
@@ -248,6 +253,7 @@ module Test {
             }
         };
 
+        object = object.bind(this);
         object.because = object;
 
         return object;
@@ -256,11 +262,12 @@ module Test {
     function Skip(): ISkip {
         var object: any = (message?: string): void => {
             if (this.result.state != State.fail) {
-                this.result.state = this.func.intent != Intent.none ? State.skip : State.fail;
+                this.result.state = this.func.intent == Intent.none ? State.skip : State.fail;
                 this.result.message = message;
             }
         };
 
+        object = object.bind(this);
         object.because = object;
 
         return object;
@@ -275,7 +282,7 @@ module Test {
         run(): boolean;
     }
 
-    interface IContainer extends IRun {
+    export interface IContainer extends IRun {
         results(): IResult[];
     }
 

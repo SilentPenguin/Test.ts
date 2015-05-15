@@ -1,4 +1,5 @@
 ﻿/// <reference path="../test.ts/assert.ts" />
+/// <reference path="../test.ts/report.ts" />
 /// <reference path="../test.ts/test.ts" />
 
 class MyTest extends Test.Case {
@@ -9,18 +10,28 @@ class MyTest extends Test.Case {
     }
 
     @test
-    something_defined(): void {
+    SomethingIsDefined(): void {
         Assert.that(this.something).is.defined
     }
 
     @test
-    something_true(): void {
+    @skip
+    SomethingIsTrue(): void {
         Assert.that(this.something).is.true();
         this.something = false;
     }
 
     @test
-    something_false(): void {
+    SomethingIsFive(): void {
         Assert.that(this.something).is.equal.to(5);
     }
+
+    @test.must.fail
+    SomethingIsFiveFail(): void {
+        Assert.that(this.something).is.equal.to(5);
+    }
+}
+
+window.onload = () => {
+    new Report.Html(new MyTest).run();
 }
