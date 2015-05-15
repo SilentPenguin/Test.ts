@@ -6,6 +6,11 @@ module Test {
      *     Enums      *
      *----------------*/
 
+    enum Action {
+        run,
+        skip
+    };
+
     enum Intent {
         none, //normal behaviour, passes pass, fails fail, skips skip.
         pass, //pass only, passes pass, everything else fails.
@@ -41,8 +46,10 @@ module Test {
 
     function SkipTest(skip: boolean = true, reason?: string): IMethodDecorator {
         if (skip) {
-            return (target: Object, key: string, descriptor: TypedPropertyDescriptor<Function>) => {
-                descriptor.value = function () { reason != null ? this.skip.because(reason) : this.skip(); }
+            return (target: Object, key: string, descriptor: TypedPropertyDescriptor<ITest>) => {
+                descriptor.value.action = skip ? Action.skip : Action.run;
+                descriptor.value.message = reason;
+                return descriptor;
             };
         } else {
             return (target: Object, key: string, descriptor: TypedPropertyDescriptor<ITest>) => {
@@ -72,6 +79,7 @@ module Test {
     function TakeTest(intent: Intent) {
         return (target: Object, key: string, descriptor: TypedPropertyDescriptor<ITest>) => {
             descriptor.value.intent = intent;
+            descriptor.value.action = descriptor.value.action || Action.run;
             return descriptor;
         }
     }
@@ -191,19 +199,22 @@ module Test {
         }
 
         run(): boolean {
-            try {
-                var context = {};
-                context['pass'] = Pass.call(this);
-                context['fail'] = Fail.call(this);
-                context['skip'] = Skip.call(this);
 
-                this.before.call(context);
-                this.func.call(context);
-                this.after.call(context);
-                this.pass();
-            }
-            catch(exception) {
-                this.fail.because(exception.message);
+            switch (this.func.action) {
+                case Action.run:
+                    try {
+                        var context = {};
+                        this.before.call(context);
+                        this.func.call(context);
+                        this.after.call(context);
+                        this.pass();
+                    }
+                    catch (exception) {
+                        this.fail.because(exception.message);
+                    }
+                    break;
+                case Action.skip:
+                    this.skip.because(this.func.message);
             }
 
             return this.result.state != State.fail;
@@ -324,6 +335,8 @@ module Test {
     interface ITest {
         (): void;
         intent: Intent;
+        action: Action;
+        message: string;
     }
 
     interface IMethodDecorator {

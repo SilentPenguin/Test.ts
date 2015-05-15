@@ -14,8 +14,8 @@ class MyTest extends Test.Case {
         Assert.that(this.something).is.defined
     }
 
+    @skip.because('test')
     @test
-    @skip
     SomethingIsTrue(): void {
         Assert.that(this.something).is.true();
         this.something = false;
