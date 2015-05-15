@@ -1,5 +1,5 @@
-﻿/// <reference path="test.ts" />
-/// <reference path="assert.ts" />
+﻿/// <reference path="../test.ts/assert.ts" />
+/// <reference path="../test.ts/test.ts" />
 
 class MyTest extends Test.Case {
     something: any;

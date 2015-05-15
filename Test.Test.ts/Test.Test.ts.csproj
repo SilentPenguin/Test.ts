@@ -3,7 +3,7 @@
   <Import Project="$(MSBuildExtensionsPath32)\Microsoft\VisualStudio\v$(VisualStudioVersion)\TypeScript\Microsoft.TypeScript.Default.props" Condition="Exists('$(MSBuildExtensionsPath32)\Microsoft\VisualStudio\v$(VisualStudioVersion)\TypeScript\Microsoft.TypeScript.Default.props')" />
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
-    <ProjectGuid>{EB7FB6AD-5DAE-4C03-8D1C-E7FABDFE2E61}</ProjectGuid>
+    <ProjectGuid>{62533A49-B935-4712-8CFD-D2C4199E6A6B}</ProjectGuid>
     <ProjectTypeGuids>{349c5851-65df-11da-9384-00065b846f21};{fae04ec0-301f-11d3-bf4b-00c04f79efbc}</ProjectTypeGuids>
     <OutputType>Library</OutputType>
     <OutputPath>bin</OutputPath>
@@ -18,14 +18,38 @@
     <IISExpressUseClassicPipelineMode />
   </PropertyGroup>
   <ItemGroup>
-    <TypeScriptCompile Include="Assert.ts" />
-    <TypeScriptCompile Include="Test.ts" />
+    <Content Include="app.css" />
+    <Content Include="index.html" />
+    <Content Include="web.config" />
+  </ItemGroup>
+  <ItemGroup>
+    <TypeScriptCompile Include="..\Test.ts\Assert.ts">
+      <Link>Scripts\Assert.ts</Link>
+    </TypeScriptCompile>
+    <TypeScriptCompile Include="..\Test.ts\Test.ts">
+      <Link>Scripts\Test.ts</Link>
+    </TypeScriptCompile>
+    <TypeScriptCompile Include="app.ts" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="web.Debug.config">
+      <DependentUpon>web.config</DependentUpon>
+    </None>
+    <None Include="web.Release.config">
+      <DependentUpon>web.config</DependentUpon>
+    </None>
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\Test.ts\Test.ts.csproj">
+      <Project>{eb7fb6ad-5dae-4c03-8d1c-e7fabdfe2e61}</Project>
+      <Name>Test.ts</Name>
+    </ProjectReference>
   </ItemGroup>
   <PropertyGroup>
     <VisualStudioVersion Condition="'$(VisualStudioVersion)' == ''">12.0</VisualStudioVersion>
   </PropertyGroup>
   <PropertyGroup>
-    <RootNamespace>Test.ts</RootNamespace>
+    <RootNamespace>Test.Test.ts</RootNamespace>
   </PropertyGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <Import Project="$(MSBuildExtensionsPath32)\Microsoft\VisualStudio\v$(VisualStudioVersion)\WebApplications\Microsoft.WebApplication.targets" Condition="Exists('$(MSBuildExtensionsPath32)\Microsoft\VisualStudio\v$(VisualStudioVersion)\WebApplications\Microsoft.WebApplication.targets')" />
@@ -35,9 +59,9 @@
         <WebProjectProperties>
           <UseIIS>True</UseIIS>
           <AutoAssignPort>True</AutoAssignPort>
-          <DevelopmentServerPort>61375</DevelopmentServerPort>
+          <DevelopmentServerPort>56548</DevelopmentServerPort>
           <DevelopmentServerVPath>/</DevelopmentServerVPath>
-          <IISUrl>http://localhost:61375/</IISUrl>
+          <IISUrl>http://localhost:56548/</IISUrl>
           <NTLMAuthentication>False</NTLMAuthentication>
           <UseCustomServer>False</UseCustomServer>
           <CustomServerUrl>
@@ -56,4 +80,9 @@
     <TypeScriptSourceMap>false</TypeScriptSourceMap>
   </PropertyGroup>
   <Import Project="$(MSBuildExtensionsPath32)\Microsoft\VisualStudio\v$(VisualStudioVersion)\TypeScript\Microsoft.TypeScript.targets" Condition="Exists('$(MSBuildExtensionsPath32)\Microsoft\VisualStudio\v$(VisualStudioVersion)\TypeScript\Microsoft.TypeScript.targets')" />
+  <Target Name="CopyLinkedContentFiles" AfterTargets="Build">
+    <Copy Condition="'%(TypeScriptCompile.Link)' != ''" SourceFiles="%(TypeScriptCompile.Identity)" DestinationFiles="%(TypeScriptCompile.Link)" SkipUnchangedFiles="true" OverwriteReadOnlyFiles="true"/>
+    <Copy Condition="'%(TypeScriptCompile.Link)' != ''" SourceFiles="@(TypeScriptCompile -> '%(RootDir)%(Directory)%(Filename).js')" DestinationFolder="$([System.IO.Path]::GetDirectoryName(%(TypeScriptCompile.Link)))" SkipUnchangedFiles="true" OverwriteReadOnlyFiles="true" />
+    <Copy Condition="'%(TypeScriptCompile.Link)' != ''" SourceFiles="@(TypeScriptCompile -> '%(RootDir)%(Directory)%(Filename).js.map')" DestinationFolder="$([System.IO.Path]::GetDirectoryName(%(TypeScriptCompile.Link)))" SkipUnchangedFiles="true" OverwriteReadOnlyFiles="true" />
+  </Target>
 </Project>
