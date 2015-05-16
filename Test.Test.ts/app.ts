@@ -14,7 +14,7 @@ class MyTest extends Test.Case {
         Assert.that(this.something).is.defined
     }
 
-    @skip.because('test')
+    @skip.because('test skipped for reasons')
     @test
     SomethingIsTrue(): void {
         Assert.that(this.something).is.true();
@@ -34,4 +34,5 @@ class MyTest extends Test.Case {
 
 window.onload = () => {
     new Report.Html(new MyTest).run();
+    new Report.Console(new MyTest).run();
 }
