@@ -33,6 +33,6 @@ class MyTest extends Test.Case {
 }
 
 window.onload = () => {
-    new Report.Html(new MyTest).run();
+    document.body.innerHTML = new Report.Html(new MyTest).run();
     new Report.Console(new MyTest).run();
 }

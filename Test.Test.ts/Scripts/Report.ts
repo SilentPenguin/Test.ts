@@ -42,10 +42,21 @@ module Report {
                 discovered = this.results.length,
                 messages = [];
 
-            if (passed != discovered) { messages.push(discovered + ' test' + (discovered == 1 ? '' : 's') + ' discovered.'); }
-            if (passed) {  messages.push(passed + ' test' + (passed == 1 ? '' : 's') + ' passed.'); }
-            if (failed) { messages.push(failed + ' test' + (failed == 1 ? '' : 's') + ' failed.'); }
-            if (skipped) { messages.push(skipped + ' test' + (skipped == 1 ? '' : 's') + ' skipped.'); }
+            if (passed != discovered) {
+                messages.push(discovered + ' test' + (discovered == 1 ? '' : 's') + ' discovered.');
+            }
+
+            if (passed) {
+                messages.push(passed + ' test' + (passed == 1 ? '' : 's') + ' passed.');
+            }
+
+            if (failed) {
+                messages.push(failed + ' test' + (failed == 1 ? '' : 's') + ' failed.');
+            }
+
+            if (skipped) {
+                messages.push(skipped + ' test' + (skipped == 1 ? '' : 's') + ' skipped.');
+            }
 
             return messages.join(' ');
         }
