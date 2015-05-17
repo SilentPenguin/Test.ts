@@ -110,37 +110,38 @@ module Test {
 
         constructor(path?: String) {
             this.name = (<any>this).constructor.name;
-            this.cases = this.getCases();
+            this.cases = [];
         }
 
-        getCases(): IContainer[] {
-            var result: IContainer[] = [];
+        maintainCases(): void {
+            var item: any;
 
             for (var property in this) {
-                if (this[property] instanceof Set || this[property] instanceof Case) {
-                    this.add(this[property]);
+                item = this[property];
+                if ((item instanceof Set || item instanceof Case) && this.cases.indexOf(item) < 0) {
+                    this.cases.push(item);
                 }
             }
-
-            return result;
         }
 
         add(test: IContainer): void {
+            this.maintainCases();
             this.cases.push(test);
         }
 
         run(): boolean {
             var result: boolean = true;
+            this.maintainCases();
             this.cases.forEach(test => result = test.run() && result);
             return result;
         }
 
         results(): IResult[] {
             var results: IResult[] = [];
-            this.cases.forEach(test => results.concat(test.results()));
+            this.cases.forEach(test => results = results.concat(test.results()));
             results.forEach(result => result.path = this.name + "." + result.path);
             return results;
-        }
+        }concat
     }
 
     export class Case implements ICase {
