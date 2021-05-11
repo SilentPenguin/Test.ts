@@ -42,5 +42,5 @@ class MyTestOfSomething extends Test.Case
 }
 ```
 
-#Getting Started
+# Getting Started
 Please refer to the [wiki](https://github.com/SilentPenguin/Test.ts/wiki) for more infomation on working with Test.ts.
